@@ -62,6 +62,59 @@ model_filename = "ridge_regression_model.pkl"
 joblib.dump(pipeline, model_filename)
 print(f"Model saved as {model_filename}")
 
+
+#Random forest
+from sklearn.ensemble import RandomForestRegressor
+
+
+rf_pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # Scaling isn't strictly necessary for Random Forest but included for consistency
+    ('random_forest', RandomForestRegressor(n_estimators=100, random_state=42))
+])
+
+
+rf_cv_scores = cross_val_score(rf_pipeline, X_train, y_train, cv=5, scoring='r2')
+print(f"Random Forest Cross-Validation R² Score: {rf_cv_scores.mean() * 100:.2f}%")
+
+
+rf_pipeline.fit(X_train, y_train)
+
+# Evaluate performance
+rf_train_r2 = r2_score(y_train, rf_pipeline.predict(X_train))
+rf_test_r2 = r2_score(y_test, rf_pipeline.predict(X_test))
+print(f"Random Forest Training R²: {rf_train_r2 * 100:.2f}%")
+print(f"Random Forest Testing R²: {rf_test_r2 * 100:.2f}%")
+
+# Save the Random Forest model
+joblib.dump(rf_pipeline, "random_forest_model.pkl")
+print("Random Forest model saved as random_forest_model.pkl")
+
+#XG Boost
+from xgboost import XGBRegressor
+
+# Define the XGBoost pipeline
+xgb_pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # Scaling isn't necessary for tree-based models but included for consistency
+    ('xgboost', XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=6, random_state=42))
+])
+
+# Cross-validation scores
+xgb_cv_scores = cross_val_score(xgb_pipeline, X_train, y_train, cv=5, scoring='r2')
+print(f"XGBoost Cross-Validation R² Score: {xgb_cv_scores.mean() * 100:.2f}%")
+
+# Fit the model
+xgb_pipeline.fit(X_train, y_train)
+
+# Evaluate performance
+xgb_train_r2 = r2_score(y_train, xgb_pipeline.predict(X_train))
+xgb_test_r2 = r2_score(y_test, xgb_pipeline.predict(X_test))
+print(f"XGBoost Training R²: {xgb_train_r2 * 100:.2f}%")
+print(f"XGBoost Testing R²: {xgb_test_r2 * 100:.2f}%")
+
+# Save the XGBoost model
+joblib.dump(xgb_pipeline, "xgboost_model.pkl")
+print("XGBoost model saved as xgboost_model.pkl")
+
 # Streamlit app
 st.title("Car Price Prediction App")
 
@@ -90,6 +143,8 @@ user_data = pd.DataFrame([inputs])
 
 
 user_data = user_data[features] 
+model_filename = "random_forest_model.pkl"  
+model = joblib.load(model_filename)
 
 # Predict the price
 if st.button("Predict"):
